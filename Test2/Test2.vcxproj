@@ -148,6 +148,9 @@
     <EmbeddedResource Include="mainPage.resx">
       <DependentUpon>mainPage.h</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="MyForm.aa.resx">
+      <DependentUpon>MyForm.h</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="MyForm.resx">
       <DependentUpon>MyForm.h</DependentUpon>
     </EmbeddedResource>
