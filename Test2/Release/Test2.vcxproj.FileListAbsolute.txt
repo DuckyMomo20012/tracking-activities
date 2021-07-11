@@ -1,0 +1,4 @@
+D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\Release\Test2.mainPage.resources
+D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\Release\Test2.MyForm.resources
+D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\Release\Test2.vcxproj.GenerateResource.cache
+D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\Release\Test2.vcxproj.AssemblyReference.cache
