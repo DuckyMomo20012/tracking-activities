@@ -3,6 +3,8 @@ from pydrive.auth import GoogleAuth
 
 # For using listdir()
 import os
+# For moving files
+import shutil
 
 
 # Below code does the authentication
@@ -34,7 +36,7 @@ def upload():
     if (len(getFolder) > 0):
         # Get the first folder found!!!
         folder = getFolder[0]
-        cur_upload_des = os.path.join(cur_dir, 'pictures')
+        cur_upload_des = os.path.join(cur_dir, 'Upload')
         # iterating thought all the files/folder
         # of the desired directory
         for x in os.listdir(cur_upload_des):
@@ -69,6 +71,24 @@ def download():
         if (getFile[0]['mimeType'] in availableTypeToPrintContent):
             print(f"File: '{fileDownloadedName}' Contain: '{file.GetContentString()}'\n")
         print("Downloaded")
+
+        #Get current directory
+        cur_dir = os.getcwd()
+        #Get file directory
+        fileDir = os.path.join(cur_dir, fileDownloadedName)
+        target = os.path.join(cur_dir, "Downloads")
+
+        #Move files to "Downloads" folder
+        try:
+            shutil.move(fileDir, target)
+            print(f"{fileDownloadedName} moved to 'Downloads' folder")
+        except:
+            ans = str(input((f"File {fileDownloadedName} already exist. Do you want to replace it?: (Y/N) ")))
+            if "Y" == ans:
+                os.replace(fileDir, target)
+                print(f"{fileDownloadedName} moved to 'Downloads' folder")
+            else:
+                print("Canceled")
     else:
         print(f"File '{fileName}' doesn't exist")
 
@@ -103,7 +123,7 @@ while ans:
     print("""
     1.List all files
     2.Create folder
-    3.Upload all files from pictures directory
+    3.Upload all files from 'Upload' folder
     4.Download file to current directory
     5.Logout
     6.Exit
