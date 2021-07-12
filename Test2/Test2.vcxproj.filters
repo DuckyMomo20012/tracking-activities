@@ -15,28 +15,39 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MyForm.cpp">
+    <ClCompile Include="TrackingApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="mainPage.cpp">
+    <ClCompile Include="screenShot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="notification.cpp">
+    <ClCompile Include="Tokenizer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ActiveTime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyForm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mainPage.h">
+    <ClInclude Include="TrackingApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ActiveTime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="notification.h">
+    <ClInclude Include="screenShot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Tokenizer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="input.txt">
+      <Filter>Source Files</Filter>
+    </Text>
+    <Text Include="Downloads\activate.txt" />
+    <Text Include="Downloads\history.txt" />
+    <Text Include="Downloads\wrongpass.txt" />
   </ItemGroup>
 </Project>
