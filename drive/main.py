@@ -36,7 +36,8 @@ drive = GoogleDrive(gauth)
 username = drive.GetAbout()['user']['displayName']
 email = drive.GetAbout()['user']['emailAddress']
 print(f"Connected to '{username}' Google Drive, Email: '{email}'")
-   
+
+### Unused functions 
 def upload():
     folderName = str(input("Enter folder's name to upload to: "))
     getFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
@@ -111,14 +112,14 @@ def createFolder():
         if (folderName != ""):
             print(f"'{folderName}' created")
         else:
-            print("'New Folder' created")
+            print("'New Folder' created on Google Drive")
 
 def listFiles():
     file_list = drive.ListFile({'q': 'trashed=false'}).GetList()
 
     for files in file_list:
         print(files['title'], files['id'])
-
+###
 def removeCred():
     try:
         os.remove("mycreds.txt")
@@ -285,7 +286,8 @@ def sortLines(fileName):
     for time in data:
         h, m = time.split(" ")[0][1:].split(":")
         toTime = h * 60 + m # We will use toTime to sort in code below
-
+    # time.split(" ")[0][1:].split(":")[0] tuong tu nhu h
+    # time.split(" ")[0][1:].split(":")[1]) tuong tu nhu m
     data.sort(key=lambda time: time.split(" ")[0][1:].split(":")[0] * 60 + time.split(" ")[0][1:].split(":")[1])
     
     newData = data.copy()
@@ -305,10 +307,11 @@ def removeDuplicateAndBlankLines(fileName):
 
     data = list(dict.fromkeys(data))
 
-    # Boi vi line cuoi khong co "\n" nen co the duplicate
-    # Boi vi file da dc sort nen chi check 2 dong cuoi cung, dong cuoi thu 2 
-    # se bo di "\n" de so sanh vs dong cuoi
-    # Phai dam bao tat ca so dong > 1
+    # Boi vi line cuoi khong co "\n" nen co the duplicate.
+    # Them vao do file da dc sort o ham sortLines() nen chi check 
+    # 2 dong cuoi cung va dong cuoi thu 2, dong cuoi thu 2
+    # se bo di "\n" de so sanh vs dong cuoi.
+    # Dong thoi phai dam bao tat ca so dong > 1
     if len(data) > 1 and data[-1] == data[-2].strip("\n"):
         data.remove(data[-1])
 
@@ -330,6 +333,7 @@ def stripLastLineEndLine(fileName):
     data = readFile.readlines()
     readFile.close()
 
+    #Won't check if file is empty
     if len(data) > 0:
         data[-1] = data[-1].strip("\n")
 
@@ -348,6 +352,7 @@ def fixLines(fileName, lineToFix, newLine):
     data = readFile.readlines()
     readFile.close()
     newData = data.copy()
+    # Assign old lines to new line
     newData[lineToFix] = newLine
     writeFile = open(f"{fileName}", "w+")
     for lines in newData:
@@ -368,7 +373,7 @@ def checkLogic(fileName):
             F, T, D, I, S = pack
 
         # Boi vi check format o tren tim ra nhung dong khong hop le 
-        # la co dau "-" nen o day khong can check lai nua
+        # la co dau "-" nen o day cac co khong the la so am nen khong can check lai nua
 
         fromTime = F[1:].split(":")
         fromTimeToMin = int(fromTime[0]) * 60 + int(fromTime[1])
@@ -507,7 +512,7 @@ def editConfig(fileName):
                         reg = r"[^\\]*\.txt"
                         #cmd format: ['C:\\Windows\\system32\\NOTEPAD.EXE', 'C:\\Users\\VINH\\Desktop\\solution', 'source.txt']
                         cmd = proc.cmdline()
-                        # If file name contains "space", then we have to join 
+                        # If file name contains "space" character, then we have to join 
                         # all strings
                         pathFileOpening = "".join(cmd[1:])
                         # Strip previous path
@@ -515,7 +520,7 @@ def editConfig(fileName):
                         fileOpening = re.search(reg, pathFileOpening)
                         if (fileOpening.group() == fileName):
                             found = True
-                            time.sleep(1)
+                            time.sleep(1) # Delay 1 second
                 if (found == False):
                     break
             check = checkEmpty(fileName)
@@ -543,6 +548,8 @@ def uploadImage():
     todayFolder = getTodayFolder()
 
     cur_upload_des = os.path.join(cur_dir, 'Upload')
+    if not os.path.exists(cur_upload_des):
+        os.makedirs(cur_upload_des)
     # iterating thought all the files/folder
     # of the desired directory
     for x in os.listdir(cur_upload_des):
@@ -601,11 +608,11 @@ while ans:
     print(f"'{username}' Google Drive, Email: '{email}'")
     print("""
 
-    1.View history
-    2.Edit 'activate.txt'
-    3.Delete 'Downloads' folder
-    4.Logout
-    5.Exit
+    1.View history.
+    2.Edit 'activate.txt'.
+    3.Delete 'Downloads' folder.
+    4.Logout.
+    5.Exit.
     """)
     ans = str(input("What would you like to do?: "))
     if "1" == ans:
@@ -616,7 +623,7 @@ while ans:
         createConfig("activate.txt")
         editConfig("activate.txt")
     elif "3" == ans:
-        logout = str(input("Do you want to delete 'Downloads' folder?: (Y/N) "))
+        logout = str(input("Do you want to delete 'Dowload' folder?: (Y/N) "))
         if logout == "Y":
             ### DON'T CHANGE THIS!!!!!
             ### IT WILL REMOVE ALL THE FILES YOU HAVE IF YOU CHANGE DIRECTORY!!!!
@@ -631,9 +638,9 @@ while ans:
             ans = False
             print("\nExiting...")
         else:
-            print("Canceled")
+            print("Canceled.")
     elif "5" == ans:
         ans = False
         print("\nExiting...")
     else:
-        print("\n Not Valid Choice. Please try again")
+        print("\n Not Valid Choice. Please try again.")
