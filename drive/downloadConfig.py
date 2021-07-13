@@ -54,12 +54,12 @@ def downloadConfig(fileName):
     if os.path.exists(file_dir):
         os.remove(file_dir)
     # Lay file o trong folder "TrackingActivities"
-    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:
+    parentFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
+    if len(parentFile) > 0:
         # Get the first file found!!!
-        print(getFile[0]['title'])
-        fileDownloadedName = getFile[0]['title']
-        file_id = getFile[0]['id']
+        print(parentFile[0]['title'])
+        fileDownloadedName = parentFile[0]['title']
+        file_id = parentFile[0]['id']
         file = drive.CreateFile({'id': file_id})
         file.GetContentFile(fileDownloadedName)
     else:

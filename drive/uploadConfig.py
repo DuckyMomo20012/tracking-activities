@@ -52,9 +52,9 @@ def uploadConfig(fileName):
     cur_dir = os.getcwd()
     file_dir = os.path.join(cur_dir, fileName)
     #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:  # File exist
-        f = getFile[0]
+    parentFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
+    if len(parentFile) > 0:  # File exist
+        f = parentFile[0]
         f.SetContentFile(file_dir)
         f.Upload()
     else:
@@ -62,9 +62,9 @@ def uploadConfig(fileName):
         f.SetContentFile(file_dir)
         f.Upload()
     #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:  # File exist
-        f = getFile[0]
+    todayFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    if len(todayFile) > 0:  # File exist
+        f = todayFile[0]
         f.SetContentFile(file_dir)
         f.Upload()
     else:
