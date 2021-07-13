@@ -523,7 +523,8 @@ def editConfig(fileName):
                             time.sleep(1) # Delay 1 second
                 if (found == False):
                     break
-            check = checkEmpty(fileName)
+            # Luc dau ben chuong trinh C khong the handle file trong nen can phai check
+            # check = checkEmpty(fileName)
             if check == False:
                 continue
             # Check format first
@@ -575,6 +576,7 @@ def downloadImage(folderName):
     getFile = drive.ListFile({'q': f"trashed=false and '{parentFolder['id']}' in parents"}).GetList()
 
     cur_dir = os.getcwd()
+    # Because todayFolder format is "dd/mm/YYYY" so we have to replace "/" with "_"
     newParentFolderName = parentFolderName.replace(r"/", "_")
     target = os.path.join(cur_dir, f"Downloads\\{newParentFolderName}")
     
