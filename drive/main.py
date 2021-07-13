@@ -525,8 +525,8 @@ def editConfig(fileName):
                     break
             # Luc dau ben chuong trinh C khong the handle file trong nen can phai check
             # check = checkEmpty(fileName)
-            if check == False:
-                continue
+            # if check == False:
+            #     continue
             # Check format first
             if checkFormat(fileName) == True:
                 sortLines(fileName)
