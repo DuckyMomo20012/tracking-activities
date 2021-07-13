@@ -1,0 +1,3 @@
+D:\Qhope\LEARN\Operating System\Process2\TrackingApp\TrackingApp\x64\Debug\TrackingApp.TrackingApp.resources
+D:\Qhope\LEARN\Operating System\Process2\TrackingApp\TrackingApp\x64\Debug\TrackingApp.vcxproj.GenerateResource.cache
+D:\Qhope\LEARN\Operating System\Process2\TrackingApp\TrackingApp\x64\Debug\TrackingApp.vcxproj.AssemblyReference.cache

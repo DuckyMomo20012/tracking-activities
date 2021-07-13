@@ -1,8 +1,0 @@
-﻿  MyForm.cpp
-D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\MyForm.h(160,14): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\MyForm.cpp(7,32): warning C4829: Possibly incorrect parameters to function main. Consider 'int main(Platform::Array<Platform::String^>^ argv)'
-  notification.cpp
-D:\Qhope\LEARN\Operating System\Process2\Test2\Test2\MyForm.h(160,14): warning C4996: 'localtime': This function or variable may be unsafe. Consider using localtime_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  Generating Code...
-  mainPage.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
-  Test2.vcxproj -> D:\Qhope\LEARN\Operating System\Process2\Test2\Debug\Test2.exe
