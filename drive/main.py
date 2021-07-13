@@ -247,6 +247,19 @@ def downloadConfig(fileName):
     else:
         print(f"File '{fileName}' doesn't exist on Google Drive")
 
+def checkEmpty(fileName):
+    readFile = open(f"{fileName}", "r")
+    data = readFile.readlines()
+    if len(data) == 0:
+        print(f"""
+        ERROR: File {fileName} can't be empty.
+        NOTE: You should go to "README.txt" to see examples. 
+        """)
+        readFile.close()
+        return False
+    readFile.close()
+    return True
+   
 def checkFormat(fileName):
     readFile = open(f"{fileName}", "r")
     reg = r"^F[0-2]\d:[0-5]\d\sT[0-2]\d:[0-5]\d(|\sD\d+\sI\d+\sS\d+|\sS\d+)$"
@@ -260,9 +273,75 @@ def checkFormat(fileName):
             F<h1:m1> T<h2:m2>|D<mD> I<mI>|S<mS>
             NOTE: remember to remove redundant space at the end of line
             """)
+            readFile.close()
             return False
     readFile.close()
     return True
+
+def sortLines(fileName):
+    readFile = open(f"{fileName}", "r")
+    data = readFile.readlines()
+    readFile.close()
+    for time in data:
+        h, m = time.split(" ")[0][1:].split(":")
+        toTime = h * 60 + m # We will use toTime to sort in code below
+
+    data.sort(key=lambda time: time.split(" ")[0][1:].split(":")[0] * 60 + time.split(" ")[0][1:].split(":")[1])
+    
+    newData = data.copy()
+
+    writeFile = open(f"{fileName}", "w+")
+    for lines in newData:
+        writeFile.writelines(lines)
+    writeFile.close()
+    print(f"""
+    File {fileName} sorted
+    """)
+
+def removeDuplicateAndBlankLines(fileName):
+    readFile = open(f"{fileName}", "r")
+    data = readFile.readlines()
+    readFile.close()
+
+    data = list(dict.fromkeys(data))
+
+    # Boi vi line cuoi khong co "\n" nen co the duplicate
+    # Boi vi file da dc sort nen chi check 2 dong cuoi cung, dong cuoi thu 2 
+    # se bo di "\n" de so sanh vs dong cuoi
+    # Phai dam bao tat ca so dong > 1
+    if len(data) > 1 and data[-1] == data[-2].strip("\n"):
+        data.remove(data[-1])
+
+    if "\n" in data:
+        data.remove("\n")
+
+    newData = data.copy()
+
+    writeFile = open(f"{fileName}", "w+")
+    for lines in newData:
+        writeFile.writelines(lines)
+    writeFile.close()
+    print(f"""
+    File {fileName} removed duplicates and blank lines
+    """)
+
+def stripLastLineEndLine(fileName):
+    readFile = open(f"{fileName}", "r")
+    data = readFile.readlines()
+    readFile.close()
+
+    if len(data) > 0:
+        data[-1] = data[-1].strip("\n")
+
+    newData = data.copy()
+
+    writeFile = open(f"{fileName}", "w+")
+    for lines in newData:
+        writeFile.writelines(lines)
+    writeFile.close()
+    print(f"""
+    File {fileName} stripped last line's endline
+    """)    
 
 def fixLines(fileName, lineToFix, newLine):
     readFile = open(f"{fileName}", "r")
@@ -299,75 +378,88 @@ def checkLogic(fileName):
         if availableTime <= 0:
             print(f"""
             ERROR: Wrong 'from' and 'to' time in line {index + 1}. 
-            'T' time should be bigger than 'F' time
+            'T' time should be bigger than 'F' time.
             """)
+            readFile.close()
             return False
         sumTime = 0
         if S != "":
             sumTime = int(S[1:])
+            # S co the bang voi availableTime
             if (sumTime > availableTime):
                 print(f"""
                 ERROR: Wrong 'sum' time in line {index + 1}. 
-                'S' time should be smaller than available time
+                'S' time should be smaller than available time.
                 """)
+                readFile.close()
                 return False
             if (sumTime == 0):
                 print(f"""
                 ERROR: Wrong 'sum' time in line {index + 1}. 
-                'S' can't be Zero
+                'S' can't be Zero.
                 """)
+                readFile.close()
                 return False
         durationTime = 0
         if D != "":
             durationTime = int(D[1:])
-            if durationTime > availableTime: # range from 0 <= durationTime <= availableTime
+            # D co the bang voi S, se duoc optimize tu dong
+            if durationTime > sumTime:
                 print(f"""
                 ERROR: Wrong 'duration' time in line {index + 1}. 
-                'D' time should be smaller than available time
+                'D' time should be smaller than sum time.
                 """)
+                readFile.close()
                 return False
             if durationTime == 0:
                 print(f"""
                 ERROR: Wrong 'duration' time in line {index + 1}. 
-                'D' can't be Zero
+                'D' can't be Zero.
                 """)
+                readFile.close()
                 return False
                 
         interruptTime = 0
         if I != "":
-            # availableInterruptTime = 
+            # Neu chi so sanh lon hon thi luc do I + D = S nhung D = 0 thi se tra ve ERROR
             interruptTime = int(I[1:])
-            if (interruptTime > availableTime): # range from 0 <= interruptTime <= availableTime
+            if (interruptTime >= sumTime):
                 print(f"""
                 ERROR: Wrong 'interrupt' time in line {index + 1}. 
-                'I' time should be smaller than available time
+                'I' time should be smaller than sum time.
                 """)
+                readFile.close()
                 return False
-
+        # D + I co the bang voi S
         if durationTime + interruptTime > sumTime:
             print(f"""
             ERROR: Wrong 'duration' and 'interrupt' time in line {index + 1}. 
-            'D' + 'I' time should be smaller than 'S' time
+            'D' + 'I' time should be smaller than 'S' time.
             """)
+            readFile.close()
             return False
 
-        if (sumTime == availableTime and durationTime == 0 and interruptTime == 0):
+        if (D == "" and I == "" and sumTime == availableTime):
             newLines = f"{F} {T}\n"
+            fixLines(fileName, index, newLines)
+            oldText = data[index].strip("\n")
+            newText = newLines.strip("\n")
             print(f"""
             Line[{index + 1}] optimized 
-            From '{data[index]}' 
-            To '{newLines}'
+            From '{oldText}' 
+            To '{newText}'
             """)
-            fixLines(fileName, index, newLines)
         if D != "" and I != "" and durationTime == sumTime and interruptTime == 0:
             # S da co san "\n" nen khong can them nua 😡😡😡
             newLines = f"{F} {T} {S}"
+            fixLines(fileName, index, newLines)
+            oldText = data[index].strip("\n")
+            newText = newLines.strip("\n")
             print(f"""
             Line[{index + 1}] optimized 
-            From '{data[index]}' 
-            To '{newLines}'
+            From '{oldText}' 
+            To '{newText}'
             """)
-            fixLines(fileName, index, newLines)
 
     readFile.close()
     return True
@@ -393,73 +485,10 @@ def checkConflict(fileName):
                 Conflict between line {index - 1 + 1} and line {index + 1}.
                 Please fix it and try again.
                 """)
+                readFile.close()
                 return False
     readFile.close()
     return True
-
-def removeDuplicateAndBlankLines(fileName):
-    readFile = open(f"{fileName}", "r")
-    data = readFile.readlines()
-    readFile.close()
-
-    data = list(dict.fromkeys(data))
-
-    # Boi vi line cuoi khong co "\n" nen co the duplicate
-    # Boi vi file da dc sort nen chi check 2 dong cuoi cung, dong cuoi thu 2 
-    # se bo di "\n" de so sanh vs dong cuoi
-    # Phai dam bao tat ca so dong > 1
-    if len(data) > 1 and data[-1] == data[-2].strip("\n"):
-        data.remove(data[-1])
-
-    if "\n" in data:
-        data.remove("\n")
-
-    newData = data.copy()
-
-    writeFile = open(f"{fileName}", "w+")
-    for lines in newData:
-        writeFile.writelines(lines)
-    writeFile.close()
-    print(f"""
-    File {fileName} removed duplicates and blank lines
-    """)
-
-def sortLines(fileName):
-    readFile = open(f"{fileName}", "r")
-    data = readFile.readlines()
-    readFile.close()
-    for time in data:
-        h, m = time.split(" ")[0][1:].split(":")
-        toTime = h * 60 + m # We will use toTime to sort in code below
-
-    data.sort(key=lambda time: time.split(" ")[0][1:].split(":")[0] * 60 + time.split(" ")[0][1:].split(":")[1])
-    
-    newData = data.copy()
-
-    writeFile = open(f"{fileName}", "w+")
-    for lines in newData:
-        writeFile.writelines(lines)
-    writeFile.close()
-    print(f"""
-    File {fileName} sorted
-    """)
-
-def stripLastLineEndLine(fileName):
-    readFile = open(f"{fileName}", "r")
-    data = readFile.readlines()
-    readFile.close()
-
-    data[-1] = data[-1].strip("\n")
-
-    newData = data.copy()
-
-    writeFile = open(f"{fileName}", "w+")
-    for lines in newData:
-        writeFile.writelines(lines)
-    writeFile.close()
-    print(f"""
-    File {fileName} stripped last line's endline
-    """)    
 
 def editConfig(fileName):
     if platform.system() == "Windows":
@@ -489,7 +518,9 @@ def editConfig(fileName):
                             time.sleep(1)
                 if (found == False):
                     break
-
+            check = checkEmpty(fileName)
+            if check == False:
+                continue
             # Check format first
             if checkFormat(fileName) == True:
                 sortLines(fileName)
@@ -532,9 +563,8 @@ def uploadImage():
 
 def downloadImage(folderName):
     parentFolderName = folderName
-    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
     # Get the first folder found!!!
-    parentFolder = getParentFolder[0]
+    parentFolder = getParentFolder()
     getFile = drive.ListFile({'q': f"trashed=false and '{parentFolder['id']}' in parents"}).GetList()
 
     cur_dir = os.getcwd()
