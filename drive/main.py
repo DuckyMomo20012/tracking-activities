@@ -571,8 +571,15 @@ def uploadImage():
 
 def downloadImage(folderName):
     parentFolderName = folderName
+    # Khong dung getParentFolder() boi vi cai nay la de quy !!!
+    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
+    if (len(getParentFolder) == 0):
+        newFolder = drive.CreateFile({'title': parentFolderName, "mimeType": "application/vnd.google-apps.folder"})
+        newFolder.Upload()
+        getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
     # Get the first folder found!!!
-    parentFolder = getParentFolder()
+    # Get the first folder found!!!
+    parentFolder = getParentFolder[0]
     getFile = drive.ListFile({'q': f"trashed=false and '{parentFolder['id']}' in parents"}).GetList()
 
     cur_dir = os.getcwd()
