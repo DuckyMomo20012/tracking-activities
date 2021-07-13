@@ -207,9 +207,9 @@ def uploadConfig(fileName):
     cur_dir = os.getcwd()
     file_dir = os.path.join(cur_dir, fileName)
     #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:  # File exist
-        f = getFile[0]
+    parentFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
+    if len(parentFile) > 0:  # File exist
+        f = parentFile[0]
         f.SetContentFile(file_dir)
         f.Upload()
     else:
@@ -217,9 +217,9 @@ def uploadConfig(fileName):
         f.SetContentFile(file_dir)
         f.Upload()
     #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:  # File exist
-        f = getFile[0]
+    todayFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    if len(todayFile) > 0:  # File exist
+        f = todayFile[0]
         f.SetContentFile(file_dir)
         f.Upload()
     else:
@@ -237,16 +237,16 @@ def downloadConfig(fileName):
     if os.path.exists(file_dir):
         os.remove(file_dir)
     # Lay file o trong folder "TrackingActivities"
-    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:
+    parentFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
+    if len(parentFile) > 0:
         # Get the first file found!!!
-        fileDownloadedName = getFile[0]['title']
-        file_id = getFile[0]['id']
-        fileInfo = drive.CreateFile({'id': file_id})
-        fileInfo.GetContentFile(fileDownloadedName)
-        print(f"Downloaded {getFile[0]['title']}")
+        print(parentFile[0]['title'])
+        fileDownloadedName = parentFile[0]['title']
+        file_id = parentFile[0]['id']
+        file = drive.CreateFile({'id': file_id})
+        file.GetContentFile(fileDownloadedName)
     else:
-        print(f"File '{fileName}' doesn't exist on Google Drive")
+        print(f"File '{fileName}' doesn't exist")
 
 def checkEmpty(fileName):
     readFile = open(f"{fileName}", "r")
