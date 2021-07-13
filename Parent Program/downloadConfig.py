@@ -35,17 +35,17 @@ if (len(getParentFolder) == 0):
 # Get the first folder found!!!
 parentFolder = getParentFolder[0]
 
-# Create folder for each day
-today = date.today()
-day = today.strftime(r"%d/%m/%Y")
-folderName = day
-getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-if (len(getTodayFolder) == 0):
-    newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
-    newFolder.Upload()
-    getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-# Get the first folder found!!!
-todayFolder = getTodayFolder[0]
+# # Create folder for each day
+# today = date.today()
+# day = today.strftime(r"%d/%m/%Y")
+# folderName = day
+# getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
+# if (len(getTodayFolder) == 0):
+#     newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
+#     newFolder.Upload()
+#     getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
+# # Get the first folder found!!!
+# todayFolder = getTodayFolder[0]
 
 def downloadConfig(fileName):
     #Check if file already exits, if it does then remove and download new file
@@ -54,7 +54,7 @@ def downloadConfig(fileName):
     if os.path.exists(file_dir):
         os.remove(file_dir)
     # Lay file o trong folder "TrackingActivities"
-    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
     if len(getFile) > 0:
         # Get the first file found!!!
         print(getFile[0]['title'])
