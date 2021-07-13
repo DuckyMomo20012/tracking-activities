@@ -36,10 +36,6 @@ drive = GoogleDrive(gauth)
 username = drive.GetAbout()['user']['displayName']
 email = drive.GetAbout()['user']['emailAddress']
 print(f"Connected to '{username}' Google Drive, Email: '{email}'")
-
-# replace the value of this variable
-# with the absolute path of the directory
-# path = r"C:\\Users\\VINH\\Desktop\\drive\\pictures"
    
 def upload():
     folderName = str(input("Enter folder's name to upload to: "))
@@ -75,12 +71,12 @@ def download():
         print(getFile[0]['title'])
         fileDownloadedName = getFile[0]['title']
         file_id = getFile[0]['id']
-        file = drive.CreateFile({'id': file_id})
-        file.GetContentFile(fileDownloadedName)
+        fileInfo = drive.CreateFile({'id': file_id})
+        fileInfo.GetContentFile(fileDownloadedName)
         #if mimeType is 'text/plain', 'text/x-python', 'application/json'
         availableTypeToPrintContent = ['text/plain', 'text/x-python', 'application/json']
         if (getFile[0]['mimeType'] in availableTypeToPrintContent):
-            print(f"File: '{fileDownloadedName}' Contain: '{file.GetContentString()}'\n")
+            print(f"File: '{fileDownloadedName}' Contain: '{fileInfo.GetContentString()}'\n")
         print("Downloaded")
 
         #Get current directory
@@ -120,8 +116,8 @@ def createFolder():
 def listFiles():
     file_list = drive.ListFile({'q': 'trashed=false'}).GetList()
 
-    for file in file_list:
-        print(file['title'], file['id'])
+    for files in file_list:
+        print(files['title'], files['id'])
 
 def removeCred():
     try:
@@ -129,6 +125,88 @@ def removeCred():
         print("Logout")
     except:
         print("There was an error")
+
+def getTodayFolder():
+    # Get parent Folder name
+    parentFolderName = "TrackingActivities"
+    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
+    if (len(getParentFolder) == 0):
+        newFolder = drive.CreateFile({'title': parentFolderName, "mimeType": "application/vnd.google-apps.folder"})
+        newFolder.Upload()
+        getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
+    # Get the first folder found!!!
+    parentFolder = getParentFolder[0]
+
+    # Create folder for each day
+    today = date.today()
+    day = today.strftime(r"%d/%m/%Y")
+    folderName = day
+    getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
+    if (len(getTodayFolder) == 0):
+        newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
+        newFolder.Upload()
+        getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
+    
+    # Return the first folder found!!!
+    return getTodayFolder[0]
+
+def createConfig(fileName):
+    # Get the first folder found!!!
+    todayFolder = getTodayFolder()
+
+    cur_dir = os.getcwd()
+    file_dir = os.path.join(cur_dir, fileName)
+    #Check if exist (LOCAL)
+    if not os.path.exists(file_dir):
+        # Tao mot file moi khong co noi dung
+        newFile = open(fileName, "w+")
+        newFile.close()
+        print(f"Created {fileName} on local")
+    #Check if exist:
+    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    if len(getFile) == 0:  # File doesn't exist
+        f = drive.CreateFile({'title': fileName, 'parents': [{'id': todayFolder['id']}]})
+        f.SetContentFile(file_dir)
+        f.Upload()
+        print(f"Uploaded {fileName} to GoogleDrive")
+
+def uploadConfig(fileName):
+    # Get the first folder found!!!
+    todayFolder = getTodayFolder()
+
+    cur_dir = os.getcwd()
+    file_dir = os.path.join(cur_dir, fileName)
+    #Check if exist:
+    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    if len(getFile) > 0:  # File exist
+        f = getFile[0]
+        f.SetContentFile(file_dir)
+        f.Upload()
+    else:
+        f = drive.CreateFile({'title': fileName, 'parents': [{'id': todayFolder['id']}]})
+        f.SetContentFile(file_dir)
+        f.Upload()
+
+def downloadConfig(fileName):
+    # Get the first folder found!!!
+    todayFolder = getTodayFolder()
+
+    #Check if file already exits, if it does then remove and download new file
+    cur_dir = os.getcwd()
+    file_dir = os.path.join(cur_dir, fileName)
+    if os.path.exists(file_dir):
+        os.remove(file_dir)
+    # Lay file o trong folder "TrackingActivities"
+    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
+    if len(getFile) > 0:
+        # Get the first file found!!!
+        fileDownloadedName = getFile[0]['title']
+        file_id = getFile[0]['id']
+        fileInfo = drive.CreateFile({'id': file_id})
+        fileInfo.GetContentFile(fileDownloadedName)
+        print(f"Downloaded {getFile[0]['title']}")
+    else:
+        print(f"File '{fileName}' doesn't exist on Google Drive")
 
 def checkFormat(fileName):
     readFile = open(f"{fileName}", "r")
@@ -146,13 +224,14 @@ def checkFormat(fileName):
     readFile.close()
     return True
 
-def fixLines(fileName, lineToFix, newData):
+def fixLines(fileName, lineToFix, newLine):
     readFile = open(f"{fileName}", "r")
     data = readFile.readlines()
     readFile.close()
-    data[lineToFix] = newData
+    newData = data.copy()
+    newData[lineToFix] = newLine
     writeFile = open(f"{fileName}", "w+")
-    for lines in data:
+    for lines in newData:
         writeFile.writelines(lines)
     writeFile.close()
 
@@ -220,14 +299,15 @@ def checkLogic(fileName):
             return False
 
         if (sumTime == availableTime and durationTime == 0 and interruptTime == 0):
-            newLines = f"{F} {T}"
+            newLines = f"{F} {T}\n"
             print(f"""
             Line[{index}] optimized 
             From '{data[index]}' 
             To '{newLines}'
             """)
             fixLines(fileName, index, newLines)
-        if durationTime == sumTime and interruptTime == 0:
+        if D != "" and I != "" and durationTime == sumTime and interruptTime == 0:
+            # S da co san "\n" nen khong can them nua 😡😡😡
             newLines = f"{F} {T} {S}"
             print(f"""
             Line[{index}] optimized 
@@ -259,82 +339,6 @@ def sortLines(fileName):
     File {fileName} sorted
     """)
 
-def uploadConfig(fileName):
-    # Get parent Folder name
-    parentFolderName = "TrackingActivities"
-    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
-    if (len(getParentFolder) == 0):
-        newFolder = drive.CreateFile({'title': parentFolderName, "mimeType": "application/vnd.google-apps.folder"})
-        newFolder.Upload()
-        getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
-    # Get the first folder found!!!
-    parentFolder = getParentFolder[0]
-
-    # Create folder for each day
-    today = date.today()
-    day = today.strftime(r"%d/%m/%Y")
-    folderName = day
-    getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    if (len(getTodayFolder) == 0):
-        newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
-        newFolder.Upload()
-        getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    # Get the first folder found!!!
-    todayFolder = getTodayFolder[0]
-
-    cur_dir = os.getcwd()
-    file_dir = os.path.join(cur_dir, fileName)
-    #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:  # File exist
-        f = getFile[0]
-        f.SetContentFile(file_dir)
-        f.Upload()
-    else:
-        f = drive.CreateFile({'title': fileName, 'parents': [{'id': todayFolder['id']}]})
-        f.SetContentFile(file_dir)
-        f.Upload()
-
-def downloadConfig(fileName):
-    # Get parent Folder name
-    parentFolderName = "TrackingActivities"
-    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
-    if (len(getParentFolder) == 0):
-        newFolder = drive.CreateFile({'title': parentFolderName, "mimeType": "application/vnd.google-apps.folder"})
-        newFolder.Upload()
-        getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
-    # Get the first folder found!!!
-    parentFolder = getParentFolder[0]
-
-    # Create folder for each day
-    today = date.today()
-    day = today.strftime(r"%d/%m/%Y")
-    folderName = day
-    getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    if (len(getTodayFolder) == 0):
-        newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
-        newFolder.Upload()
-        getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    # Get the first folder found!!!
-    todayFolder = getTodayFolder[0]
-
-    #Check if file already exits, if it does then remove and download new file
-    cur_dir = os.getcwd()
-    file_dir = os.path.join(cur_dir, fileName)
-    if os.path.exists(file_dir):
-        os.remove(file_dir)
-    # Lay file o trong folder "TrackingActivities"
-    getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
-    if len(getFile) > 0:
-        # Get the first file found!!!
-        print(getFile[0]['title'])
-        fileDownloadedName = getFile[0]['title']
-        file_id = getFile[0]['id']
-        file = drive.CreateFile({'id': file_id})
-        file.GetContentFile(fileDownloadedName)
-    else:
-        print(f"File '{fileName}' doesn't exist")
-
 def editConfig(fileName):
     if platform.system() == "Windows":
         check = False
@@ -364,32 +368,15 @@ def editConfig(fileName):
                 if (found == False):
                     break
             
-            sortLines(fileName)
             check = checkFormat(fileName) and checkLogic(fileName)
+            if check == True:
+                sortLines(fileName)
 
         uploadConfig(fileName)
 
 def uploadImage():
-    # Get parent Folder name
-    parentFolderName = "TrackingActivities"
-    getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
-    if (len(getParentFolder) == 0):
-        newFolder = drive.CreateFile({'title': parentFolderName, "mimeType": "application/vnd.google-apps.folder"})
-        newFolder.Upload()
-        getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
     # Get the first folder found!!!
-    parentFolder = getParentFolder[0]
-    # Create folder for each day
-    today = date.today()
-    day = today.strftime(r"%d/%m/%Y")
-    folderName = day
-    getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    if (len(getTodayFolder) == 0):
-        newFolder = drive.CreateFile({'title': folderName, "mimeType": "application/vnd.google-apps.folder", 'parents': [{'id': parentFolder['id']}]})
-        newFolder.Upload()
-        getTodayFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
-    # Get the first folder found!!!
-    todayFolder = getTodayFolder[0]
+    todayFolder = getTodayFolder()
 
     cur_upload_des = os.path.join(cur_dir, 'Upload')
     # iterating thought all the files/folder
@@ -418,11 +405,14 @@ def downloadImage(folderName):
     getFile = drive.ListFile({'q': f"trashed=false and '{parentFolder['id']}' in parents"}).GetList()
 
     cur_dir = os.getcwd()
-    target = os.path.join(cur_dir, "Downloads")
+    newParentFolderName = parentFolderName.replace(r"/", "_")
+    target = os.path.join(cur_dir, f"Downloads\\{newParentFolderName}")
+    
+    if not os.path.exists(target):
+        os.makedirs(target)
 
     for files in getFile:
         # Get the first file found!!!
-        print(files['title'])
         # normal file mimeType is 'text/plain'. If mimeType is 'application/vnd.google-apps.folder'
         # then we have to recursively go to that folder and download files within it
         if (files['mimeType'] == 'application/vnd.google-apps.folder'):
@@ -430,24 +420,29 @@ def downloadImage(folderName):
         else:
             fileDownloadedName = files['title']
             file_id = files['id']
-            file = drive.CreateFile({'id': file_id})
-            file.GetContentFile(fileDownloadedName)
+            fileInfo = drive.CreateFile({'id': file_id})
 
-            file_dir = os.path.join(cur_dir, fileDownloadedName)
-            shutil.move(file_dir, target)
+            # if this file didn't download
+            if not os.path.exists(os.path.join(target, fileDownloadedName)):
+                file_dir = os.path.join(cur_dir, fileDownloadedName)
+                fileInfo.GetContentFile(fileDownloadedName)
+                # Boi vi ten thu muc da ton tai nen se khong in ra ten thu muc download
+                print(f"Downloaded {files['title']}")
+                shutil.move(file_dir, target)
 
 def removeImage(path):
-    for files in os.listdir(path):
-        os.remove(os.path.join(path, files))
+    shutil.rmtree(path)
         
 ans = True
 while ans:
     print(f"'{username}' Google Drive, Email: '{email}'")
     print("""
+
     1.View history
     2.Edit 'activate.txt'
-    3.Logout
-    4.Exit
+    3.Delete 'Downloads' folder
+    4.Logout
+    5.Exit
     """)
     ans = str(input("What would you like to do?: "))
     if "1" == ans:
@@ -455,8 +450,18 @@ while ans:
         os.startfile(f"{os.getcwd()}\Downloads")
     elif "2" == ans:
         downloadConfig("activate.txt")
+        createConfig("activate.txt")
         editConfig("activate.txt")
     elif "3" == ans:
+        logout = str(input("Do you want to delete 'Downloads' folder?: (Y/N) "))
+        if logout == "Y":
+            ### DON'T CHANGE THIS!!!!!
+            ### IT WILL REMOVE ALL THE FILES YOU HAVE IF YOU CHANGE DIRECTORY!!!!
+            removeImage(f"{os.getcwd()}\\Downloads")
+            ###
+        else:
+            print("Canceled")
+    elif "4" == ans:
         logout = str(input("Do you want to logout?: (Y/N) "))
         if logout == "Y":
             removeCred()
@@ -464,12 +469,8 @@ while ans:
             print("\nExiting...")
         else:
             print("Canceled")
-    elif "4" == ans:
+    elif "5" == ans:
         ans = False
-        print("\nRemoving files from 'Downloads' folder...")
-        ### DON'T CHANGE THIS!!!!!
-        removeImage(f"{os.getcwd()}\\Downloads")
-        ###
         print("\nExiting...")
     else:
         print("\n Not Valid Choice. Please try again")
