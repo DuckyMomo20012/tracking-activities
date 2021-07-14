@@ -1,5 +1,5 @@
 - Nếu chưa có python thì chạy file "installPython.bat"
-- Để chạy chương trình thì chạy file "parent_program.py"
+- Để chạy chương trình thì chạy file "winRun.bat"
 - Để uninstall python thì chạy file "uninstallPython.bat"
 FORMAT:
 F<h1:m1> T<h2:m2>

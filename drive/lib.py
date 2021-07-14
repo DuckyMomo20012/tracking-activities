@@ -62,7 +62,7 @@ def getPass():
     if encrypted_pass == None:
         key = getKey()
         print("""
-        🔑 Please create new password
+    Please create new password
         """)
         createConfig("password.txt")
         editConfig("password.txt", upload=False)
