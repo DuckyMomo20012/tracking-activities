@@ -1,12 +1,10 @@
 from lib import *
 
-drive = auth()
-username, email = showInfo()
-
 login()
 
 ans = True
 while ans:
+    username, email = showInfo()
     print(f"'{username}' Google Drive, Email: '{email}'")
     print("""
 
@@ -29,10 +27,10 @@ while ans:
         if logout == "Y":
             ### DON'T CHANGE THIS!!!!!
             ### IT WILL REMOVE ALL THE FILES YOU HAVE IF YOU CHANGE DIRECTORY!!!!
-            removeImage(f"{os.getcwd()}\\Downloads")
+            removeFolder(f"{os.getcwd()}\\Downloads")
             ###
         else:
-            print("Canceled")
+            print("\nCanceled")
     elif "4" == ans:
         logout = str(input("Do you want to logout?: (Y/N) "))
         if logout == "Y":
@@ -40,9 +38,9 @@ while ans:
             ans = False
             print("\nExiting...")
         else:
-            print("Canceled.")
+            print("\nCanceled.")
     elif "5" == ans:
         ans = False
         print("\nExiting...")
     else:
-        print("\n Not Valid Choice. Please try again.")
+        print("\nNot Valid Choice. Please try again.")

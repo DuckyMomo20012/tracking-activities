@@ -27,7 +27,7 @@ def decrypt(token: bytes, key: bytes) -> bytes:
 def getSensitiveData(fileName):
     drive = auth()
     # Get the first folder found!!!
-    parentFolder = getParentFolder()
+    parentFolder = getParentFolder(drive)
 
     # Lay file o trong folder "TrackingActivities"
     parentFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
@@ -62,7 +62,7 @@ def getPass():
     if encrypted_pass == None:
         key = getKey()
         print("""
-        Please create new password
+        🔑 Please create new password
         """)
         createConfig("password.txt")
         editConfig("password.txt", upload=False)
@@ -86,6 +86,9 @@ def getPass():
     return encrypted_pass
 
 def login():
+    print("""
+    Loading...
+    """)
     key = getKey()
     encrypted_password = getPass()
     decrypted_password = decrypt(encrypted_password, key).decode()
@@ -93,12 +96,14 @@ def login():
     while check == False:
         input_password = str(input("Please enter password: "))
         if input_password == decrypted_password:
-            print("Login successfully.")
+            print("""
+    Login successfully.
+            """)
             check = True
         else:
             print("""
-            Wrong password. Forgot password?
-            NOTE: You can reset password by deleting "password.txt" on Google Drive.
+    ERROR: Wrong password. Forgot password?
+    NOTE: You can reset password by deleting "password.txt" on Google Drive.
             """)
 
 def auth():
@@ -118,7 +123,8 @@ def auth():
 
     # Creates local webserver and auto
     # handles authentication.
-    # gauth.LocalWebserverAuth()       
+    # gauth.LocalWebserverAuth()
+    print("Getting Google Drive data. Please wait...")    
     drive = GoogleDrive(gauth)
     return drive
 
@@ -159,6 +165,33 @@ def upload():
         print("Uploaded")
     else:
         print(f"Folder '{folderName}' not found.")
+
+def uploadImage():
+    drive = auth()
+    cur_dir = os.getcwd()
+    # Get the first folder found!!!
+    todayFolder = getTodayFolder()
+
+    cur_upload_des = os.path.join(cur_dir, 'Upload')
+    if not os.path.exists(cur_upload_des):
+        os.makedirs(cur_upload_des)
+    # iterating thought all the files/folder
+    # of the desired directory
+    for x in os.listdir(cur_upload_des):
+    
+        f = drive.CreateFile({'title': x, 'parents':[{'id': todayFolder['id']}]})
+        f.SetContentFile(os.path.join(cur_upload_des, x))
+        f.Upload()
+
+        # Due to a known bug in pydrive if we 
+        # don't empty the variable used to
+        # upload the files to Google Drive the
+        # file stays open in memory and causes a
+        # memory leak, therefore preventing its 
+        # deletion
+        f = None
+    for x in os.listdir(cur_upload_des):
+        os.remove(os.path.join(cur_upload_des, x))
 
 def download():
     drive = auth()
@@ -224,12 +257,13 @@ def listFiles():
 def removeCred():
     try:
         os.remove("mycreds.txt")
-        print("Logout")
+        print("Logout.")
     except:
-        print("There was an error")
+        print("There was an error.")
 
-def getParentFolder():
-    drive = auth()
+def getParentFolder(drive = None):
+    if drive == None:
+        drive = auth()
     # Get parent Folder name
     parentFolderName = "TrackingActivities"
     getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
@@ -240,9 +274,10 @@ def getParentFolder():
     # Get the first folder found!!!
     return getParentFolder[0]
 
-def getTodayFolder():
-    drive = auth()
-    parentFolder = getParentFolder()
+def getTodayFolder(drive = None):
+    if drive == None:
+        drive = auth()
+    parentFolder = getParentFolder(drive)
 
     # Create folder for each day
     today = date.today()
@@ -257,8 +292,9 @@ def getTodayFolder():
     # Return the first folder found!!!
     return getTodayFolder[0]
 
-def getParentFolderAndTodayFolder():
-    drive = auth()
+def getParentFolderAndTodayFolder(drive = None):
+    if drive == None:
+        drive = auth()
     # Get parent Folder name
     parentFolderName = "TrackingActivities"
     getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
@@ -290,7 +326,7 @@ def createConfig(fileName):
         # Tao mot file moi khong co noi dung
         newFile = open(fileName, "w+")
         newFile.close()
-        print(f"Created {fileName} on local")
+        print(f"Created {fileName} on local.")
         return True
     return False
 
@@ -299,7 +335,7 @@ def uploadConfig(fileName):
     # Upload to both parent folder and today folder!!!
 
     # Get the first folder found!!!
-    parentFolder, todayFolder = getParentFolderAndTodayFolder()
+    parentFolder, todayFolder = getParentFolderAndTodayFolder(drive)
 
     cur_dir = os.getcwd()
     file_dir = os.path.join(cur_dir, fileName)
@@ -327,7 +363,7 @@ def uploadConfig(fileName):
 def downloadConfig(fileName):
     drive = auth()
     # Get the first folder found!!!
-    parentFolder = getParentFolder()
+    parentFolder = getParentFolder(drive)
 
     #Check if file already exits, if it does then remove and download new file
     cur_dir = os.getcwd()
@@ -338,21 +374,21 @@ def downloadConfig(fileName):
     parentFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
     if len(parentFile) > 0:
         # Get the first file found!!!
-        print(parentFile[0]['title'])
+        print(f"Downloaded {parentFile[0]['title']}.")
         fileDownloadedName = parentFile[0]['title']
         file_id = parentFile[0]['id']
         file = drive.CreateFile({'id': file_id})
         file.GetContentFile(fileDownloadedName)
     else:
-        print(f"File '{fileName}' doesn't exist")
+        print(f"ERROR: File '{fileName}' doesn't exist.")
 
 def checkEmpty(fileName):
     readFile = open(f"{fileName}", "r")
     data = readFile.readlines()
     if len(data) == 0:
         print(f"""
-        ERROR: File {fileName} can't be empty.
-        NOTE: You should go to "README.txt" to see examples. 
+    ERROR: File {fileName} can't be empty.
+    NOTE: You should go to "README.txt" to see examples. 
         """)
         readFile.close()
         return False
@@ -367,10 +403,10 @@ def checkFormat(fileName):
         find = re.search(reg, lines)
         if find is None:
             print(f"""
-            There was an error in line {index + 1} in '{fileName}'. 
+            ERROR: There was an error in line {index + 1} in '{fileName}'. 
             Please edit line {index + 1} to correct format below:
             F<h1:m1> T<h2:m2>|D<mD> I<mI>|S<mS>
-            NOTE: remember to remove redundant space at the end of line
+             NOTE: remember to remove redundant space at the end of line
             """)
             readFile.close()
             return False
@@ -394,9 +430,7 @@ def sortLines(fileName):
     for lines in newData:
         writeFile.writelines(lines)
     writeFile.close()
-    print(f"""
-    File {fileName} sorted
-    """)
+    print(f"File {fileName} sorted.")
 
 def removeDuplicateAndBlankLines(fileName):
     readFile = open(f"{fileName}", "r")
@@ -422,9 +456,7 @@ def removeDuplicateAndBlankLines(fileName):
     for lines in newData:
         writeFile.writelines(lines)
     writeFile.close()
-    print(f"""
-    File {fileName} removed duplicates and blank lines
-    """)
+    print(f"File {fileName} removed duplicates and blank lines.")
 
 def stripLastLineEndLine(fileName):
     readFile = open(f"{fileName}", "r")
@@ -441,9 +473,7 @@ def stripLastLineEndLine(fileName):
     for lines in newData:
         writeFile.writelines(lines)
     writeFile.close()
-    print(f"""
-    File {fileName} stripped last line's endline
-    """)    
+    print(f"File {fileName} stripped last line's endline.")    
 
 def fixLines(fileName, lineToFix, newLine):
     readFile = open(f"{fileName}", "r")
@@ -480,8 +510,8 @@ def checkLogic(fileName):
         availableTime = toTimeToMin - fromTimeToMin
         if availableTime <= 0:
             print(f"""
-            ERROR: Wrong 'from' and 'to' time in line {index + 1}. 
-            'T' time should be bigger than 'F' time.
+    ERROR: Wrong 'from' and 'to' time in line {index + 1}. 
+    'T' time should be bigger than 'F' time.
             """)
             readFile.close()
             return False
@@ -491,15 +521,15 @@ def checkLogic(fileName):
             # S co the bang voi availableTime
             if (sumTime > availableTime):
                 print(f"""
-                ERROR: Wrong 'sum' time in line {index + 1}. 
-                'S' time should be smaller than available time.
+    ERROR: Wrong 'sum' time in line {index + 1}. 
+    'S' time should be smaller than available time.
                 """)
                 readFile.close()
                 return False
             if (sumTime == 0):
                 print(f"""
-                ERROR: Wrong 'sum' time in line {index + 1}. 
-                'S' can't be Zero.
+    ERROR: Wrong 'sum' time in line {index + 1}. 
+    'S' can't be Zero.
                 """)
                 readFile.close()
                 return False
@@ -509,15 +539,15 @@ def checkLogic(fileName):
             # D co the bang voi S, se duoc optimize tu dong
             if durationTime > sumTime:
                 print(f"""
-                ERROR: Wrong 'duration' time in line {index + 1}. 
-                'D' time should be smaller than sum time.
+    ERROR: Wrong 'duration' time in line {index + 1}. 
+    'D' time should be smaller than sum time.
                 """)
                 readFile.close()
                 return False
             if durationTime == 0:
                 print(f"""
-                ERROR: Wrong 'duration' time in line {index + 1}. 
-                'D' can't be Zero.
+    ERROR: Wrong 'duration' time in line {index + 1}. 
+    'D' can't be Zero.
                 """)
                 readFile.close()
                 return False
@@ -528,16 +558,16 @@ def checkLogic(fileName):
             interruptTime = int(I[1:])
             if (interruptTime >= sumTime):
                 print(f"""
-                ERROR: Wrong 'interrupt' time in line {index + 1}. 
-                'I' time should be smaller than sum time.
+    ERROR: Wrong 'interrupt' time in line {index + 1}. 
+    'I' time should be smaller than sum time.
                 """)
                 readFile.close()
                 return False
         # D + I co the bang voi S
         if durationTime + interruptTime > sumTime:
             print(f"""
-            ERROR: Wrong 'duration' and 'interrupt' time in line {index + 1}. 
-            'D' + 'I' time should be smaller than 'S' time.
+    ERROR: Wrong 'duration' and 'interrupt' time in line {index + 1}. 
+    'D' + 'I' time should be smaller than 'S' time.
             """)
             readFile.close()
             return False
@@ -548,9 +578,9 @@ def checkLogic(fileName):
             oldText = data[index].strip("\n")
             newText = newLines.strip("\n")
             print(f"""
-            Line[{index + 1}] optimized 
-            From '{oldText}' 
-            To '{newText}'
+    Line[{index + 1}] optimized 
+    From '{oldText}' 
+    To '{newText}'
             """)
         if D != "" and I != "" and durationTime == sumTime and interruptTime == 0:
             # S da co san "\n" nen khong can them nua 😡😡😡
@@ -559,9 +589,9 @@ def checkLogic(fileName):
             oldText = data[index].strip("\n")
             newText = newLines.strip("\n")
             print(f"""
-            Line[{index + 1}] optimized 
-            From '{oldText}' 
-            To '{newText}'
+    Line[{index + 1}] optimized 
+    From '{oldText}' 
+    To '{newText}'
             """)
 
     readFile.close()
@@ -585,8 +615,8 @@ def checkConflict(fileName):
             previousToTimeToMin = int(previousToTime[0]) * 60 + int(previousToTime[1])
             if previousToTimeToMin >= currentFromTimeToMin:
                 print(f"""
-                Conflict between line {index - 1 + 1} and line {index + 1}.
-                Please fix it and try again.
+    Conflict between line {index - 1 + 1} and line {index + 1}.
+    Please fix it and try again.
                 """)
                 readFile.close()
                 return False
@@ -618,7 +648,7 @@ def checkFileOpening(processName, fileName):
         if opening == False:
             break
 
-    print(f"File {fileName} closed")
+    print(f"File {fileName} closed.")
 
 def editConfig(fileName, upload = True):
     if platform.system() == "Windows":
@@ -646,39 +676,10 @@ def editConfig(fileName, upload = True):
                     check = False
 
         if upload == True:
-            uploadConfig("activate.txt")
-            print(f"""
-            Uploaded {"activate.txt"} to Google Drive
-            """)
+            uploadConfig(fileName)
+            print(f"Uploaded {fileName} to Google Drive.")
             # De user khong the edit thi co the remove file sau khi edit xong
             os.remove(fileName)
-
-def uploadImage():
-    drive = auth()
-    cur_dir = os.getcwd()
-    # Get the first folder found!!!
-    todayFolder = getTodayFolder()
-
-    cur_upload_des = os.path.join(cur_dir, 'Upload')
-    if not os.path.exists(cur_upload_des):
-        os.makedirs(cur_upload_des)
-    # iterating thought all the files/folder
-    # of the desired directory
-    for x in os.listdir(cur_upload_des):
-    
-        f = drive.CreateFile({'title': x, 'parents':[{'id': todayFolder['id']}]})
-        f.SetContentFile(os.path.join(cur_upload_des, x))
-        f.Upload()
-
-        # Due to a known bug in pydrive if we 
-        # don't empty the variable used to
-        # upload the files to Google Drive the
-        # file stays open in memory and causes a
-        # memory leak, therefore preventing its 
-        # deletion
-        f = None
-    for x in os.listdir(cur_upload_des):
-        os.remove(os.path.join(cur_upload_des, x))
 
 def downloadImage(folderName):
     drive = auth()
@@ -713,13 +714,15 @@ def downloadImage(folderName):
             file_id = files['id']
             fileInfo = drive.CreateFile({'id': file_id})
 
-            # if this file didn't download
+            # if this file didn't exist then download
             if not os.path.exists(os.path.join(target, fileDownloadedName)):
                 file_dir = os.path.join(cur_dir, fileDownloadedName)
                 fileInfo.GetContentFile(fileDownloadedName)
                 # Boi vi ten thu muc da ton tai nen se khong in ra ten thu muc download
-                print(f"Downloaded {files['title']} from {newParentFolderName} folder")
+                print(f"Downloaded {files['title']} from {newParentFolderName} folder.")
                 shutil.move(file_dir, target)
+            else:
+                print(f"File {files['title']} from {newParentFolderName} folder already exist.")
 
-def removeImage(path):
+def removeFolder(path):
     shutil.rmtree(path)
