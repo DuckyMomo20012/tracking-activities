@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.31424.327
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TrackingApp", "TrackingApp\TrackingApp.vcxproj", "{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Debug|x64.ActiveCfg = Debug|x64
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Debug|x64.Build.0 = Debug|x64
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Debug|x86.ActiveCfg = Debug|Win32
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Debug|x86.Build.0 = Debug|Win32
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Release|x64.ActiveCfg = Release|x64
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Release|x64.Build.0 = Release|x64
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Release|x86.ActiveCfg = Release|Win32
+		{810FD5DA-299D-4B0B-A5C2-61E4308D79AC}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9527DAEA-68B3-4657-9BCB-5B85207CA40D}
+	EndGlobalSection
+EndGlobal
