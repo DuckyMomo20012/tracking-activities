@@ -15,36 +15,47 @@ import psutil
 from datetime import date
 # Sleep
 import time
-# Below code does the authentication
-# part of the code
-gauth = GoogleAuth()
 
-# Get current dir to check if "mycreds.txt" exist:
-cur_dir = os.getcwd()
-file_list = os.listdir(cur_dir)
-if "mycreds.txt" in file_list:
-    gauth.LoadCredentialsFile("mycreds.txt")
-    gauth.LocalWebserverAuth()
-else:
-    gauth.LocalWebserverAuth()
-    gauth.SaveCredentialsFile("mycreds.txt")
+def auth():
+    # Below code does the authentication
+    # part of the code
+    gauth = GoogleAuth()
 
-# Creates local webserver and auto
-# handles authentication.
-# gauth.LocalWebserverAuth()       
-drive = GoogleDrive(gauth)
-username = drive.GetAbout()['user']['displayName']
-email = drive.GetAbout()['user']['emailAddress']
-print(f"Connected to '{username}' Google Drive, Email: '{email}'")
+    # Get current dir to check if "mycreds.txt" exist:
+    cur_dir = os.getcwd()
+    file_list = os.listdir(cur_dir)
+    if "mycreds.txt" in file_list:
+        gauth.LoadCredentialsFile("mycreds.txt")
+        gauth.LocalWebserverAuth()
+    else:
+        gauth.LocalWebserverAuth()
+        gauth.SaveCredentialsFile("mycreds.txt")
+
+    # Creates local webserver and auto
+    # handles authentication.
+    # gauth.LocalWebserverAuth()       
+    drive = GoogleDrive(gauth)
+    return drive
+
+def showInfo():
+    drive = auth()
+    username = drive.GetAbout()['user']['displayName']
+    email = drive.GetAbout()['user']['emailAddress']
+    return username, email
 
 ### Unused functions 
 def upload():
+    drive = auth()
+    cur_dir = os.getcwd()
+    # Upload from Upload folder
     folderName = str(input("Enter folder's name to upload to: "))
     getFolder = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
     if (len(getFolder) > 0):
         # Get the first folder found!!!
         folder = getFolder[0]
         cur_upload_des = os.path.join(cur_dir, 'Upload')
+        if not os.path.exists(cur_upload_des):
+            os.makedirs(cur_upload_des)
         # iterating thought all the files/folder
         # of the desired directory
         for x in os.listdir(cur_upload_des):
@@ -65,6 +76,7 @@ def upload():
         print(f"Folder '{folderName}' not found.")
 
 def download():
+    drive = auth()
     fileName = str(input("Enter download file's name: "))
     getFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false"}).GetList()
     if len(getFile) > 0:
@@ -85,6 +97,8 @@ def download():
         #Get file directory
         file_dir = os.path.join(cur_dir, fileDownloadedName)
         target = os.path.join(cur_dir, "Downloads")
+        if not os.path.exists(target):
+            os.makedirs(target)
 
         #Move files to "Downloads" folder
         if os.path.exists(file_dir):
@@ -102,6 +116,7 @@ def download():
         print(f"File '{fileName}' doesn't exist")
 
 def createFolder():
+    drive = auth()
     folderName = str(input("Enter new folder's name: "))
     file_list = drive.ListFile({'q': f"title = '{folderName}' and trashed=false"}).GetList()
     if len(file_list) > 0:
@@ -114,7 +129,9 @@ def createFolder():
         else:
             print("'New Folder' created on Google Drive")
 
+
 def listFiles():
+    drive = auth()
     file_list = drive.ListFile({'q': 'trashed=false'}).GetList()
 
     for files in file_list:
@@ -128,6 +145,7 @@ def removeCred():
         print("There was an error")
 
 def getParentFolder():
+    drive = auth()
     # Get parent Folder name
     parentFolderName = "TrackingActivities"
     getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
@@ -139,6 +157,7 @@ def getParentFolder():
     return getParentFolder[0]
 
 def getTodayFolder():
+    drive = auth()
     parentFolder = getParentFolder()
 
     # Create folder for each day
@@ -155,6 +174,7 @@ def getTodayFolder():
     return getTodayFolder[0]
 
 def getParentFolderAndTodayFolder():
+    drive = auth()
     # Get parent Folder name
     parentFolderName = "TrackingActivities"
     getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
@@ -179,6 +199,7 @@ def getParentFolderAndTodayFolder():
     return getParentFolder[0], getTodayFolder[0]
 
 def createConfig(fileName):
+    drive = auth()
     # Get the first folder found!!!
     todayFolder = getTodayFolder()
 
@@ -199,6 +220,7 @@ def createConfig(fileName):
         print(f"Uploaded {fileName} to GoogleDrive")
 
 def uploadConfig(fileName):
+    drive = auth()
     # Upload to both parent folder and today folder!!!
 
     # Get the first folder found!!!
@@ -228,6 +250,7 @@ def uploadConfig(fileName):
         f.Upload()
 
 def downloadConfig(fileName):
+    drive = auth()
     # Get the first folder found!!!
     parentFolder = getParentFolder()
 
@@ -527,6 +550,7 @@ def editConfig(fileName):
             # check = checkEmpty(fileName)
             # if check == False:
             #     continue
+            removeDuplicateAndBlankLines(fileName)
             # Check format first
             if checkFormat(fileName) == True:
                 sortLines(fileName)
@@ -545,6 +569,8 @@ def editConfig(fileName):
         os.remove(fileName)
 
 def uploadImage():
+    drive = auth()
+    cur_dir = os.getcwd()
     # Get the first folder found!!!
     todayFolder = getTodayFolder()
 
@@ -570,6 +596,7 @@ def uploadImage():
         os.remove(os.path.join(cur_upload_des, x))
 
 def downloadImage(folderName):
+    drive = auth()
     parentFolderName = folderName
     # Khong dung getParentFolder() boi vi cai nay la de quy !!!
     getParentFolder = drive.ListFile({'q': f"title = '{parentFolderName}' and trashed=false"}).GetList()
@@ -606,50 +633,8 @@ def downloadImage(folderName):
                 file_dir = os.path.join(cur_dir, fileDownloadedName)
                 fileInfo.GetContentFile(fileDownloadedName)
                 # Boi vi ten thu muc da ton tai nen se khong in ra ten thu muc download
-                print(f"Downloaded {files['title']}")
+                print(f"Downloaded {files['title']} from {newParentFolderName} folder")
                 shutil.move(file_dir, target)
 
 def removeImage(path):
     shutil.rmtree(path)
-        
-ans = True
-while ans:
-    print(f"'{username}' Google Drive, Email: '{email}'")
-    print("""
-
-    1.View history.
-    2.Edit 'activate.txt'.
-    3.Delete 'Downloads' folder.
-    4.Logout.
-    5.Exit.
-    """)
-    ans = str(input("What would you like to do?: "))
-    if "1" == ans:
-        downloadImage("TrackingActivities")
-        os.startfile(f"{os.getcwd()}\Downloads")
-    elif "2" == ans:
-        downloadConfig("activate.txt")
-        createConfig("activate.txt")
-        editConfig("activate.txt")
-    elif "3" == ans:
-        logout = str(input("Do you want to delete 'Dowload' folder?: (Y/N) "))
-        if logout == "Y":
-            ### DON'T CHANGE THIS!!!!!
-            ### IT WILL REMOVE ALL THE FILES YOU HAVE IF YOU CHANGE DIRECTORY!!!!
-            removeImage(f"{os.getcwd()}\\Downloads")
-            ###
-        else:
-            print("Canceled")
-    elif "4" == ans:
-        logout = str(input("Do you want to logout?: (Y/N) "))
-        if logout == "Y":
-            removeCred()
-            ans = False
-            print("\nExiting...")
-        else:
-            print("Canceled.")
-    elif "5" == ans:
-        ans = False
-        print("\nExiting...")
-    else:
-        print("\n Not Valid Choice. Please try again.")
