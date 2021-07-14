@@ -1,0 +1,5 @@
+﻿  Test3.cpp
+D:\Qhope\LEARN\Operating System\Process2\Test3\Test3\Test3.cpp(11,1): warning C4005: '_AFXDLL': macro redefinition
+D:\Qhope\LEARN\Operating System\Process2\Test3\Test3\Test3.cpp : message : see previous definition of '_AFXDLL'
+D:\Qhope\LEARN\Operating System\Process2\Test3\Test3\Test3.cpp(80,23): warning C4018: '<': signed/unsigned mismatch
+  Test3.vcxproj -> D:\Qhope\LEARN\Operating System\Process2\Test3\Debug\Test3.exe
