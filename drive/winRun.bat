@@ -1,1 +1,0 @@
-python parent_program.py"

@@ -1,7 +1,0 @@
-﻿  ActiveTime.cpp
-  screenShot.cpp
-  TrackingApp.cpp
-D:\Qhope\LEARN\Operating System\Process2\TrackingApp\TrackingApp\TrackingApp.cpp(6,33): warning C4829: Possibly incorrect parameters to function main. Consider 'int main(Platform::Array<Platform::String^>^ argv)'
-  Generating Code...
-  ActiveTime.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
-  TrackingApp.vcxproj -> D:\Qhope\LEARN\Operating System\Process2\TrackingApp\x64\Debug\TrackingApp.exe
