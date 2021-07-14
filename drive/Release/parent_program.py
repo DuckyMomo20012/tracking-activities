@@ -2,7 +2,9 @@ from lib import *
 
 drive = auth()
 username, email = showInfo()
-        
+
+login()
+
 ans = True
 while ans:
     print(f"'{username}' Google Drive, Email: '{email}'")
@@ -20,8 +22,8 @@ while ans:
         os.startfile(f"{os.getcwd()}\Downloads")
     elif "2" == ans:
         downloadConfig("activate.txt")
-        createConfig("activate.txt")
-        editConfig("activate.txt")
+        checkCreateConfig = createConfig("activate.txt")
+        editConfig("activate.txt", upload=True)
     elif "3" == ans:
         logout = str(input("Do you want to delete 'Download' folder?: (Y/N) "))
         if logout == "Y":

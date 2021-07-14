@@ -15,6 +15,91 @@ import psutil
 from datetime import date
 # Sleep
 import time
+# For encrypting string
+from cryptography.fernet import Fernet
+
+def encrypt(message: bytes, key: bytes) -> bytes:
+    return Fernet(key).encrypt(message)
+
+def decrypt(token: bytes, key: bytes) -> bytes:
+    return Fernet(key).decrypt(token)
+
+def getSensitiveData(fileName):
+    drive = auth()
+    # Get the first folder found!!!
+    parentFolder = getParentFolder()
+
+    # Lay file o trong folder "TrackingActivities"
+    parentFile = drive.ListFile({'q': f"title contains '{fileName}' and trashed=false and '{parentFolder['id']}' in parents"}).GetList()
+    if len(parentFile) > 0:
+        # Get the first file found!!!
+        fileDownloadedName = parentFile[0]['title']
+        file_id = parentFile[0]['id']
+        file = drive.CreateFile({'id': file_id})
+        # Don't download this file
+        key = file.GetContentString(fileDownloadedName)
+        return key
+    else:
+        return None
+    
+def getKey():
+    key = getSensitiveData("key.txt")
+    if key == None:
+        createConfig("key.txt")
+        key = Fernet.generate_key() # byte
+        keyFile = open("key.txt", "w+")
+        keyFile.writelines(key.decode())
+        keyFile.close()
+        uploadConfig("key.txt")
+        os.remove("key.txt")
+    if type(key) is str:
+        key = key.encode()
+    return key
+
+def getPass():
+    encrypted_pass = getSensitiveData("password.txt")
+    # Key is very important
+    if encrypted_pass == None:
+        key = getKey()
+        print("""
+        Please create new password
+        """)
+        createConfig("password.txt")
+        editConfig("password.txt", upload=False)
+        # Open to read unencrypted password
+        passwordFile = open("password.txt", "r")
+        unencrypted_pass = passwordFile.readline()
+        passwordFile.close()
+        # Encrypt password
+        encrypted_pass = encrypt(unencrypted_pass.encode(), key)
+        # Open to write encrypted password
+        passwordFile = open("password.txt", "w+")
+        passwordFile.writelines(encrypted_pass.decode())
+        passwordFile.close()
+        # Upload to Google Drive
+        uploadConfig("password.txt")
+        # Remove from local
+        os.remove("password.txt")
+
+    if type(encrypted_pass) is str:
+        encrypted_pass = encrypted_pass.encode()
+    return encrypted_pass
+
+def login():
+    key = getKey()
+    encrypted_password = getPass()
+    decrypted_password = decrypt(encrypted_password, key).decode()
+    check = False
+    while check == False:
+        input_password = str(input("Please enter password: "))
+        if input_password == decrypted_password:
+            print("Login successfully.")
+            check = True
+        else:
+            print("""
+            Wrong password. Forgot password?
+            NOTE: You can reset password by deleting "password.txt" on Google Drive.
+            """)
 
 def auth():
     # Below code does the authentication
@@ -129,7 +214,6 @@ def createFolder():
         else:
             print("'New Folder' created on Google Drive")
 
-
 def listFiles():
     drive = auth()
     file_list = drive.ListFile({'q': 'trashed=false'}).GetList()
@@ -199,10 +283,6 @@ def getParentFolderAndTodayFolder():
     return getParentFolder[0], getTodayFolder[0]
 
 def createConfig(fileName):
-    drive = auth()
-    # Get the first folder found!!!
-    todayFolder = getTodayFolder()
-
     cur_dir = os.getcwd()
     file_dir = os.path.join(cur_dir, fileName)
     #Check if exist (LOCAL)
@@ -211,13 +291,8 @@ def createConfig(fileName):
         newFile = open(fileName, "w+")
         newFile.close()
         print(f"Created {fileName} on local")
-    #Check if exist:
-    getFile = drive.ListFile({'q': f"title = '{fileName}' and trashed=false and '{todayFolder['id']}' in parents"}).GetList()
-    if len(getFile) == 0:  # File doesn't exist
-        f = drive.CreateFile({'title': fileName, 'parents': [{'id': todayFolder['id']}]})
-        f.SetContentFile(file_dir)
-        f.Upload()
-        print(f"Uploaded {fileName} to GoogleDrive")
+        return True
+    return False
 
 def uploadConfig(fileName):
     drive = auth()
@@ -518,55 +593,65 @@ def checkConflict(fileName):
     readFile.close()
     return True
 
-def editConfig(fileName):
+def checkFileOpening(processName, fileName):
+    #Note: processName = "notepad.exe"
+    while (True):
+        opening = False
+        for proc in psutil.process_iter():
+            #Check if any notepad.exe is opening 
+            if (proc.name() == processName):
+                # Check reg boi vi co the la C:\\fileName\test.txt, khong 
+                # phai la file minh mong muon
+                reg = r"[^\\]*\.txt"
+                #cmd format: ['C:\\Windows\\system32\\NOTEPAD.EXE', 'C:\\Users\\VINH\\Desktop\\solution', 'source.txt']
+                cmd = proc.cmdline()
+                # If file name contains "space" character, then we have to join 
+                # all strings
+                pathFileOpening = "".join(cmd[1:])
+                # Strip previous path
+                # Ex: C:\Users\VINH\Desktop\TEST.txt, keeps only TEST.txt
+                fileOpening = re.search(reg, pathFileOpening)
+                if (fileOpening.group() == fileName):
+                    opening = True
+                    time.sleep(1) # Delay 1 second
+                    break
+        if opening == False:
+            break
+
+    print(f"File {fileName} closed")
+
+def editConfig(fileName, upload = True):
     if platform.system() == "Windows":
         check = False
         while(check == False):
             os.startfile(fileName)
-            print("activate.txt opened in Notepad")
-            print(f"Please close '{fileName} to continue")
-            while (True):
-                found = False
-                for proc in psutil.process_iter():
-                    #Check if any notepad.exe is opening 
-                    if (proc.name() == "notepad.exe"):
-                        # Check reg boi vi co the la C:\\fileName\test.txt, khong 
-                        # phai la file minh mong muon
-                        reg = r"[^\\]*\.txt"
-                        #cmd format: ['C:\\Windows\\system32\\NOTEPAD.EXE', 'C:\\Users\\VINH\\Desktop\\solution', 'source.txt']
-                        cmd = proc.cmdline()
-                        # If file name contains "space" character, then we have to join 
-                        # all strings
-                        pathFileOpening = "".join(cmd[1:])
-                        # Strip previous path
-                        # Ex: C:\Users\VINH\Desktop\TEST.txt, keeps only TEST.txt
-                        fileOpening = re.search(reg, pathFileOpening)
-                        if (fileOpening.group() == fileName):
-                            found = True
-                            time.sleep(1) # Delay 1 second
-                if (found == False):
-                    break
-            # Luc dau ben chuong trinh C khong the handle file trong nen can phai check
-            # check = checkEmpty(fileName)
-            # if check == False:
-            #     continue
-            removeDuplicateAndBlankLines(fileName)
-            # Check format first
-            if checkFormat(fileName) == True:
-                sortLines(fileName)
-                removeDuplicateAndBlankLines(fileName)
-                stripLastLineEndLine(fileName)
-                # Check conflicts then check logic
-                check = checkConflict(fileName) and checkLogic(fileName)
-            else:
-                check = False
+            print(f"'{fileName}' opened in Notepad")
+            print(f"Please close '{fileName}' to continue")
 
-        uploadConfig(fileName)
-        print(f"""
-        Uploaded {fileName} to Google Drive
-        """)
-        # De user khong the edit thi co the remove file sau khi edit xong
-        os.remove(fileName)
+            checkFileOpening("notepad.exe", fileName)
+
+            removeDuplicateAndBlankLines(fileName)
+            stripLastLineEndLine(fileName)
+            # Normal file doesn't require checking 
+            check = True
+            if fileName == "activate.txt":
+                # Check format first
+                if checkFormat(fileName) == True:
+                    sortLines(fileName)
+                    removeDuplicateAndBlankLines(fileName)
+                    stripLastLineEndLine(fileName)
+                    # Check conflicts then check logic
+                    check = checkConflict(fileName) and checkLogic(fileName)
+                else:
+                    check = False
+
+        if upload == True:
+            uploadConfig("activate.txt")
+            print(f"""
+            Uploaded {"activate.txt"} to Google Drive
+            """)
+            # De user khong the edit thi co the remove file sau khi edit xong
+            os.remove(fileName)
 
 def uploadImage():
     drive = auth()
