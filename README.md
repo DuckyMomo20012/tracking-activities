@@ -222,3 +222,9 @@ winRun.bat
     ```
 
     </details>
+    
+## Contributors:
+
+<a href="https://github.com/DuckyMomo20012/tracking-activities/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=DuckyMomo20012/tracking-activities" />
+</a>
