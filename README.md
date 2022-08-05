@@ -81,9 +81,6 @@
 
 ### :dart: Features
 
-> WARNING: This doc is updated after long time unmaintained, so maybe there is
-> some parts incorrect.
-
 - **Children program:**
 
   - Run in the background.
@@ -93,8 +90,8 @@
 - **Parent program:**
   - Manage captured pictures and send them to the Google Drive folder
     via APIs.
-  - Require user to create a folder called: "**TrackingActivities**" at the root of
-    Google Drive.
+  - Require user to create a folder called: "**TrackingActivities**" at the root
+    of Google Drive.
 
 <!-- Getting Started -->
 
@@ -108,7 +105,8 @@
 
 - Operating system: `Windows`.
 
-  > **NOTE**: This app only supports `Windows`. Currently not supporting `Linux` and `macOS`.
+  > **Note**: This app only supports `Windows`. Currently not supporting `Linux`
+  > and `macOS`.
 
 <!-- Run Locally -->
 
@@ -148,8 +146,8 @@ Activate environment:
 
 ## :eyes: Usage
 
-> WARNING: This doc is updated after long time unmaintained, so maybe there is
-> some parts incorrect.
+> **Warning**: This doc is updated after long time unmaintained, so maybe there
+> is some parts incorrect.
 
 ### :baby: Children Program:
 
@@ -172,7 +170,7 @@ Activate environment:
 
 ### :adult: Parent Program:
 
-> NOTE: **Parent program must run first to prepare needed files!**
+> **Note**: **Parent program must run first to prepare needed files!**
 
 - Run parent program (require python and requirement libs is installed):
 
@@ -189,9 +187,10 @@ Activate environment:
   - Only when file `password.txt` is closed, then data is uploaded to Google
     Drive folder.
 
-    > NOTE: User have to use **Notepad** to edit `password.txt` or other files.
+    > **Note**: User have to use **Notepad** to edit `password.txt` or other
+    > files.
 
-  > If you forget the password, then go to the Google Drive folder
+  > **Note**: If you forget the password, then go to the Google Drive folder
   > (TrackingActivities) and delete the file `password.txt`.
 
 - After login, login information is saved automatically, so users don't have to
@@ -249,7 +248,8 @@ Activate environment:
       => 0 < D + I <= S <= T - F
       ```
 
-    - If the user inputs the wrong timestamp, the user will be warned and retype.
+    - If the user inputs the wrong timestamp, the user will be warned and
+      retype.
 
     - Timestamps will be automatically optimized step by steps:
 
