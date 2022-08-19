@@ -84,14 +84,14 @@
 - **Children program:**
 
   - Run in the background.
-  - Capture background, key loggers.
+  - Capture background, and key loggers.
   - Manage on-screen time for children (force computer shutdown).
 
 - **Parent program:**
   - Manage captured pictures and send them to the Google Drive folder
     via APIs.
-  - Require user to create a folder called: "**TrackingActivities**" at the root
-    of Google Drive.
+  - Require the user to create a folder called: "**TrackingActivities**" at the
+    root of Google Drive.
 
 <!-- Getting Started -->
 
@@ -130,7 +130,7 @@ Change directory to `parent_program` folder:
 cd src/parent_program
 ```
 
-Create virtual environment:
+Create a virtual environment:
 
 ```console
 python -m venv .venv
@@ -146,10 +146,12 @@ Activate environment:
 
 ## :eyes: Usage
 
-> **Warning**: This doc is updated after long time unmaintained, so maybe there
-> is some parts incorrect.
+> **Warning**: This doc is updated after a long time unmaintained, so maybe
+> there is some parts incorrect.
 
-### :baby: Children Program:
+<!-- Children Program -->
+
+### :baby: Children Program
 
 > **Parent program must run first to prepare needed files!**
 
@@ -168,7 +170,9 @@ Activate environment:
   - Parent password: `1234`
   - Children password: `4321`
 
-### :adult: Parent Program:
+<!-- Parent Program -->
+
+### :adult: Parent Program
 
 > **Note**: **Parent program must run first to prepare needed files!**
 
@@ -184,7 +188,7 @@ Activate environment:
 - Parent program will require a password every time it runs, if you don't have
   password, parent program will create file: `password.txt` (of parent program)
 
-  - Only when file `password.txt` is closed, then data is uploaded to Google
+  - Only when file `password.txt` is closed, then data uploaded to Google
     Drive folder.
 
     > **Note**: User have to use **Notepad** to edit `password.txt` or other
@@ -199,7 +203,8 @@ Activate environment:
 - Parent program features:
 
   - **View history**: Parents can view **captured pictures** and **key loggers**
-    on both Google Drive and `Downloads` folder (created in children's program).
+    on both Google Drive and the `Downloads` folder (created in the children's
+    program).
 
   - **Delete "Downloads" folder**: The parent can delete the entire `Downloads`
     to save storage.
@@ -211,7 +216,7 @@ Activate environment:
   - **Edit activate.txt**: `activate.txt` timestamps, which allows children to
     use computer.
 
-    - Only when file `activate.txt` is closed, then data is uploaded to Google
+    - Only when file `activate.txt` is closed, then data uploaded to Google
       Drive folder.
 
     - Timestamps symbol (for `activate.txt`):
@@ -251,7 +256,7 @@ Activate environment:
     - If the user inputs the wrong timestamp, the user will be warned and
       retype.
 
-    - Timestamps will be automatically optimized step by steps:
+    - Timestamps will be automatically optimized step by step:
 
       1. Check format
       2. Sort lines
@@ -309,7 +314,7 @@ Activate environment:
           or:
           F06:00 T06:45
           F06:45 T06:52
-          (F line 1 equal T line 2) -> ERROR
+          (F line 1 equals T line 2) -> ERROR
           or:
           F06:00 T06:45
           F06:30 T07:30
