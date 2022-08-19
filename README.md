@@ -84,7 +84,7 @@
 - **Children program:**
 
   - Run in the background.
-  - Capture background, and key loggers.
+  - Capture background, ~~and key loggers~~.
   - Manage on-screen time for children (force computer shutdown).
 
 - **Parent program:**
